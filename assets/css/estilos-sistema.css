@@ -320,18 +320,3 @@ body.cargando {
         transform: rotate(360deg);
     }
 }
-
-/* --- RESERVAR ESPACIO PARA EL LAYOUT --- */
-#sidebar-placeholder {
-    width: 200px;
-    height: 100dvh;
-    background-color: var(--azul-mitru, #082334);
-    flex-shrink: 0;
-}
-
-#navbar-placeholder {
-    width: 100%;
-    height: 65px;
-    background-color: var(--azul-mitru, #082334);
-    flex-shrink: 0;
-}
