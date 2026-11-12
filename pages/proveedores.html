@@ -164,46 +164,70 @@
                         </div>
                     </div>
 
-                    <div class="form-seccion">
-                        <div class="form-seccion-titulo">
-                            <i class="fa-solid fa-calendar-days"></i> Detalles del Pedido
-                        </div>
-                        <div class="form-grid">
-                            <div class="campo">
-                                <label for="provDiasPedido" class="form-label">Días de Pedido</label>
-                                <div class="input-icono">
-                                    <i class="fa-solid fa-calendar-check"></i>
-                                    <input type="text" class="form-control" id="provDiasPedido"
-                                        placeholder="Ej: Lunes y Jueves" required>
-                                </div>
-                            </div>
-                            <div class="campo">
-                                <label for="provDiasEntrega" class="form-label">Días de Entrega</label>
-                                <div class="input-icono">
-                                    <i class="fa-solid fa-truck"></i>
-                                    <input type="text" class="form-control" id="provDiasEntrega"
-                                        placeholder="Ej: Martes y Viernes" required>
-                                </div>
-                            </div>
-                            <div class="campo">
-                                <label for="provCantidadMinima" class="form-label">Cantidad Mínima</label>
-                                <div class="input-icono">
-                                    <i class="fa-solid fa-cubes"></i>
-                                    <input type="number" class="form-control" id="provCantidadMinima" min="0"
-                                        placeholder="0" required>
-                                </div>
-                            </div>
-                            <div class="campo">
-                                <label for="provProductos" class="form-label">Productos</label>
-                                <div class="input-icono">
-                                    <i class="fa-solid fa-boxes-stacked"></i>
-                                    <input type="text" class="form-control" id="provProductos"
-                                        placeholder="Ej: Bebidas, snacks..." required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+<div class="form-seccion">
+    <div class="form-seccion-titulo">
+        <i class="fa-solid fa-calendar-days"></i> Detalles del Pedido
+    </div>
+    <div class="form-grid">
+        <div class="campo campo-full">
+            <label class="form-label">Días de Pedido</label>
+            <div class="multiselect-dias" id="diasPedido">
+                <label class="chip-dia"><input type="checkbox" value="Lunes"> Lunes</label>
+                <label class="chip-dia"><input type="checkbox" value="Martes"> Martes</label>
+                <label class="chip-dia"><input type="checkbox" value="Miércoles"> Miércoles</label>
+                <label class="chip-dia"><input type="checkbox" value="Jueves"> Jueves</label>
+                <label class="chip-dia"><input type="checkbox" value="Viernes"> Viernes</label>
+                <label class="chip-dia"><input type="checkbox" value="Sábado"> Sábado</label>
+                <label class="chip-dia"><input type="checkbox" value="Domingo"> Domingo</label>
+            </div>
+        </div>
+        <div class="campo">
+            <label for="provDiasEntrega" class="form-label">Días de Entrega</label>
+            <div class="input-icono">
+                <i class="fa-solid fa-truck"></i>
+                <select class="form-control" id="provDiasEntrega" required>
+                    <option value="" disabled selected>Seleccione una opción</option>
+                    <option value="El mismo día">El mismo día</option>
+                    <option value="Bajo coordinación">Bajo coordinación</option>
+                    <option value="Al día siguiente">Al día siguiente</option>
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes</option>
+                    <option value="Miércoles">Miércoles</option>
+                    <option value="Jueves">Jueves</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sábado">Sábado</option>
+                    <option value="Domingo">Domingo</option>
+                </select>
+            </div>
+        </div>
+        <div class="campo">
+            <label for="provCantidadMinima" class="form-label">Cantidad Mínima</label>
+            <div class="input-group-cantidad">
+                <div class="input-icono">
+                    <i class="fa-solid fa-cubes"></i>
+                    <input type="number" class="form-control" id="provCantidadMinima" min="0"
+                        placeholder="0" required>
+                </div>
+                <select class="form-control select-unidad" id="provUnidad" required>
+                    <option value="Unidad" selected>Unidad</option>
+                    <option value="Bs.">Bs.</option>
+                </select>
+            </div>
+        </div>
+        <div class="campo campo-full">
+            <label for="provProductos" class="form-label">Productos</label>
+            <div class="productos-selector" id="productosSelector">
+                <div class="productos-buscador">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="buscarProducto" placeholder="Buscar producto..." autocomplete="off">
+                </div>
+                <div class="productos-lista" id="productosLista"></div>
+                <div class="productos-seleccionados" id="productosSeleccionados"></div>
+            </div>
+            <input type="hidden" id="provProductos" required>
+        </div>
+    </div>
+</div>
                 </form>
             </div>
 
