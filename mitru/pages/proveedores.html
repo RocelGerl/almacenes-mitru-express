@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/assets/css/estilos-sistema.css">
+    <link rel="stylesheet" href="/assets/css/estilo-main.css">
+    <link rel="stylesheet" href="/assets/css/modales.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <title>Proveedores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="shortcut icon" href="/assets/img/logo.jpg" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/v/dt/dt-3.1.5/datatables.min.css">
+    <script src="https://cdn.datatables.net/v/dt/dt-3.1.5/datatables.min.js"></script>
+    <style>
+        .sidebar .cuerpo-sidebar ul li:nth-child(3) {
+            background-color: var(--azul-secundario);
+            border-left: 3px solid var(--celeste);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar-placeholder"></div>
+    <div class="contenido">
+        <div id="navbar-placeholder"></div>
+        <main>
+            <div class="encabezado-main">
+                <div class="izquierda-encabezado">
+                    <i class="fa-solid fa-truck-ramp-box"></i>
+                    <div class="texto-main">
+                        <h2>Proveedores</h2>
+                        <p>Lista de proveedores</p>
+                    </div>
+                </div>
+                <button type="button" class="agregarBtn" id="btnAgregarProveedor">
+                    <i class="fa-solid fa-circle-plus"></i> Agregar Proveedor
+                </button>
+            </div>
+
+            <div class="cuerpo-main">
+                <div class="cajas" id="cajas"></div>
+                <div class="contenidoDashboard">
+                    <div class="tabla">
+                        <div class="encabezado-tabla">
+                            <div class="izquierda-tabla">
+                                <i class="fa-solid fa-book"></i>
+                                <h2>Lista de Proveedores</h2>
+                            </div>
+                        </div>
+                        <table id="tablaProveedores">
+                            <thead>
+                                <tr>
+                                    <th>Nro</th>
+                                    <th>Foto</th>
+                                    <th>Nombre</th>
+                                    <th>Preventista</th>
+                                    <th>Teléfono</th>
+                                    <th>Días de Pedido</th>
+                                    <th>Días de Entrega</th>
+                                    <th>Cantidad Mínima</th>
+                                    <th>Dirección</th>
+                                    <th>Productos</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <dialog id="modalAgregarProveedor" class="modal-proveedor">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-truck-ramp-box"></i> Agregar Proveedor
+                </h5>
+                <button type="button" class="btn-close" id="cerrarModal" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form id="formAgregarProveedor" novalidate>
+
+                    <div class="form-seccion">
+                        <div class="form-seccion-titulo">
+                            <i class="fa-solid fa-image"></i> Foto del Proveedor
+                        </div>
+                        <div class="imagen-seccion">
+                            <div class="imagen-preview" id="imagenPreview">
+                                <div class="placeholder-icono"><i class="fa-regular fa-image"></i></div>
+                                <div class="placeholder-texto">Sin imagen<br>seleccionada</div>
+                                <button type="button" class="btn-quitar-imagen" id="btnQuitarImagen"
+                                    title="Quitar imagen">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="imagen-opciones">
+                                <div class="dropzone" id="dropzone">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <strong>Arrastra una imagen aquí</strong>
+                                    <small>o haz clic para seleccionar (JPG, PNG, WEBP)</small>
+                                </div>
+                                <button type="button" class="btn-camara" id="btnAbrirCamara">
+                                    <i class="fa-solid fa-camera"></i> Tomar foto con cámara
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-seccion">
+                        <div class="form-seccion-titulo">
+                            <i class="fa-solid fa-building"></i> Información del Proveedor
+                        </div>
+                        <div class="form-grid">
+                            <div class="campo">
+                                <label for="provNombre" class="form-label">Nombre</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-tag"></i>
+                                    <input type="text" class="form-control" id="provNombre"
+                                        placeholder="Nombre del proveedor" required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="provPreventista" class="form-label">Preventista</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-user-tie"></i>
+                                    <input type="text" class="form-control" id="provPreventista"
+                                        placeholder="Nombre del preventista" required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="provTelefono" class="form-label">Teléfono</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-phone"></i>
+                                    <input type="tel" class="form-control" id="provTelefono" placeholder="Ej: 70012345"
+                                        required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="provDireccion" class="form-label">Dirección</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    <input type="text" class="form-control" id="provDireccion"
+                                        placeholder="Dirección del proveedor" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-seccion">
+                        <div class="form-seccion-titulo">
+                            <i class="fa-solid fa-calendar-days"></i> Detalles del Pedido
+                        </div>
+                        <div class="form-grid">
+                            <div class="campo">
+                                <label for="provDiasPedido" class="form-label">Días de Pedido</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-calendar-check"></i>
+                                    <input type="text" class="form-control" id="provDiasPedido"
+                                        placeholder="Ej: Lunes y Jueves" required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="provDiasEntrega" class="form-label">Días de Entrega</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-truck"></i>
+                                    <input type="text" class="form-control" id="provDiasEntrega"
+                                        placeholder="Ej: Martes y Viernes" required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="provCantidadMinima" class="form-label">Cantidad Mínima</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-cubes"></i>
+                                    <input type="number" class="form-control" id="provCantidadMinima" min="0"
+                                        placeholder="0" required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="provProductos" class="form-label">Productos</label>
+                                <div class="input-icono">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                    <input type="text" class="form-control" id="provProductos"
+                                        placeholder="Ej: Bebidas, snacks..." required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancelar" id="cancelarModal">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="submit" form="formAgregarProveedor" class="btn-guardar">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Proveedor
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="modalCamara" class="modal-camara">
+        <div class="modal-camara-contenido">
+            <div class="modal-camara-header">
+                <h5 class="modal-camara-title">
+                    <i class="fa-solid fa-camera"></i> Tomar Foto
+                </h5>
+                <div class="camara-header-acciones">
+                    <button type="button" class="btn-cambiar-camara" id="btnCambiarCamara" title="Cambiar cámara">
+                        <i class="fa-solid fa-camera-rotate"></i>
+                    </button>
+                    <button type="button" class="btn-close" id="cerrarCamara" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-camara-body">
+                <video id="videoCamara" autoplay playsinline></video>
+                <canvas id="canvasCamara"></canvas>
+                <div class="camara-overlay" id="camaraOverlay" style="display:none;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Iniciando cámara...
+                </div>
+            </div>
+            <div class="modal-camara-footer">
+                <button type="button" class="btn-capturar" id="btnCapturarFoto" title="Capturar foto">
+                    <i class="fa-solid fa-camera"></i>
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <input type="file" id="inputImagen" accept="image/*" hidden>
+
+    <script src="/assets/js/layout.js"></script>
+    <script src="/assets/js/sidebar.js"></script>
+    <script src="/assets/js/tablas.js"></script>
+    <script src="/assets/js/modales.js"></script>
+</body>
+
+</html>
