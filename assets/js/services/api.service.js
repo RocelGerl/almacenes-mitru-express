@@ -33,3 +33,25 @@ export async function obtenerProductos() {
         throw error;
     }
 }
+
+
+export async function obtenerProveedores() {
+    const respuesta = await fetch(`${API_URL}?accion=listarProveedores`);
+
+    if (!respuesta.ok) {
+        throw new Error("Error de comunicación con el servidor.");
+    }
+
+    const datos = await respuesta.json();
+
+    if (!datos.success) {
+        throw new Error(datos.mensaje || "Error al consultar proveedores.");
+    }
+
+    if (!Array.isArray(datos.proveedores)) {
+        throw new Error("La API no devolvió una lista de proveedores.");
+    }
+
+    return datos.proveedores;
+}
+
