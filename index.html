@@ -1,128 +1,115 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/assets/css/estilo-main.css">
-    <link rel="stylesheet" href="/assets/css/estilos-sistema.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
-        crossorigin="anonymous" referrerpolicy="no-referrer">
-    <title>Dashboard</title>
+    <title>Ingresar | Sistema de Almacenes Mitru</title>
+
+    <link rel="stylesheet" href="/assets/css/estilos.css">
+
+    <link rel="shortcut icon" href="/assets/img/logo.jpg" type="image/x-icon">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="shortcut icon" href="/assets/img/logo.jpg" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        .sidebar .cuerpo-sidebar ul li:nth-child(1) {
-            background-color: var(--azul-secundario);
-            border-left: 3px solid var(--celeste);
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 
 <body>
-    <div id="sidebar-placeholder"></div>
-    <div class="contenido">
-        <div id="navbar-placeholder"></div>
 
-        <main>
-            <div class="encabezado-main">
-                <div class="izquierda-encabezado">
-                    <i class="fa-solid fa-house-chimney-window"></i>
-                    <div class="texto-main">
-                        <h2>Dashboard</h2>
-                        <p>Resumen General del Sistema</p>
-                    </div>
+    <main class="formulario">
+
+        <section class="izquierda">
+
+            <div class="decoracion decoracion-1"></div>
+            <div class="decoracion decoracion-2"></div>
+
+            <div class="marca">
+                <div class="logo">
+                    <img src="/assets/img/logo.jpgs" alt="Logo Mitru">
                 </div>
-                <div class="derecha-encabezado">
-                    <div class="fecha">
-                        <i class="fa-solid fa-calendar-days"></i>
-                        <div class="texto-main">
-                            <p>Fecha Actual:</p>
-                            <span id="fecha"></span>
-                        </div>
-                    </div>
-                    <div class="separador-main"></div>
-                    <div class="hora">
-                        <i class="fa-solid fa-clock"></i>
-                        <div class="texto-main">
-                            <p>Hora</p>
-                            <span id="hora"></span>
-                        </div>
-                    </div>
-                </div>
+
+                <span class="etiqueta">MITRU EXPRESS</span>
+
+                <h1>
+                    Sistema de
+                    <span>Almacenes y Pedidos</span>
+                </h1>
+
+                <div class="linea-decorativa"></div>
+
             </div>
-            <div class="cuerpo-main">
-                <div class="cajas" id="cajas">
 
-                </div>
-                <div class="contenidoDashboard">
-                    <div class="tabla">
-                        <div class="encabezado-tabla">
-                            <div class="izquierda-tabla">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
-                                <h2>Productos con Bajo Stock</h2>
-                            </div>
+            <footer>
+                <p>&copy; Todos los derechos reservados.</p>
+                <span>Rocel Gerl 2026</span>
+            </footer>
 
-                            <div class="derecha-tabla">
-                                <button type="button"><a href=""> Ver todos <i
-                                            class="fa-solid fa-arrow-right"></i></a></button>
-                            </div>
-                        </div>
-                        <table id="tablaStock">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Producto</th>
-                                    <th>Stock</th>
-                                    <th>Nivel</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody">
-                                <tr>
-                                    <td colspan="4" class="relleno">Sin elementos Por Ahora</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="tabla">
-                        <div class="encabezado-tabla">
-                            <div class="izquierda-tabla">
-                                <i class="fa-regular fa-square-plus"></i>
-                                <h2>Ultimos Productos Registrados</h2>
-                            </div>
-                            <div class="derecha-tabla">
-                                <button type="button"><a href=""> Ver todos <i
-                                            class="fa-solid fa-arrow-right"></i></a></button>
-                            </div>
-                        </div>
-                        <table id="tablaStock">
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Producto</th>
-                                    <th>Stock</th>
-                                    <th>Nivel</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbody">
-                                <tr>
-                                    <td colspan="4" class="relleno">Sin elementos Por Ahora</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+        </section>
+
+        <div class="centro"></div>
+
+        <section class="derecha">
+
+            <div class="encabezado-login">
+
+                <div class="icono-login">
+                    <i class="fa-solid fa-user-lock"></i>
                 </div>
+
+                <h2>¡Bienvenido!</h2>
+                <p>Inicia sesión para continuar</p>
+
             </div>
-        </main>
-    </div>
 
+            <form class="opciones" novalidate id="formulario">
 
-    <script src="/assets/js/dashboard.js"></script>
-    <script src="/assets/js/layout.js"></script>
-    <script src="/assets/js/sidebar.js"></script>
-    
+                <div class="usuarioForm">
+                    <label for="usuario">
+                        <i class="fa-solid fa-user"></i>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="usuario"
+                        id="usuario"
+                        placeholder="Ej. Juan Perez"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="contrasenaForm">
+                    <label for="contrasena">
+                        <i class="fa-solid fa-lock"></i>
+                    </label>
+
+                    <input
+                        type="password"
+                        name="contrasena"
+                        id="contrasena"
+                        placeholder="Ingresa tu contraseña"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" id="submit">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Ingresar
+                </button>
+
+            </form>
+
+            
+
+        </section>
+
+    </main>
+
+    <script src="/assets/js/verificacion.js"></script>
 </body>
-
 </html>
