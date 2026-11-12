@@ -1,5 +1,5 @@
 
-import { obtenerProductos } from "./services/api.service.js";
+import { obtenerProductos } from "/assets/js/services/api.service.js";
 
 document.addEventListener("DOMContentLoaded", cargarInventario);
 
