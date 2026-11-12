@@ -256,6 +256,30 @@ body.menu-abierto #chevron-usuario {
     animation: fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+#sidebar-placeholder {
+    width: 200px;
+    height: 100dvh;
+    background-color: var(--azul-mitru); /* Evita el parpadeo blanco */
+    flex-shrink: 0;
+}
+
+#sidebar-placeholder:has(.sidebar) {
+    background-color: transparent;
+    width: auto;
+}
+
+#navbar-placeholder {
+    width: 100%;
+    height: 65px;
+    background-color: var(--azul-mitru);
+    flex-shrink: 0;
+}
+
+#navbar-placeholder:has(.navbar) {
+    background-color: transparent;
+    height: auto;
+}
+
 @keyframes fade-out {
     from {
         opacity: 1;
