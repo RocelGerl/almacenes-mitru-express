@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", cargarInventario);
 async function cargarInventario() {
     const cuerpo = document.querySelector("#tablaInventario tbody");
 
+    if (!cuerpo) {
+        console.error("No se encontró el cuerpo de la tabla de inventario.");
+        return;
+    }
+
     try {
         cuerpo.innerHTML = `
             <tr>
@@ -15,19 +20,25 @@ async function cargarInventario() {
 
         const productos = await obtenerProductos();
 
+        console.log("Productos recibidos:", productos);
+
+        if (!Array.isArray(productos)) {
+            throw new Error("obtenerProductos() no devolvió un arreglo.");
+        }
+
         const filas = productos.map((producto, indice) => [
             indice + 1,
             "Sin imagen",
             escaparHTML(producto.nombre),
-            escaparHTML(producto.proveedor),
-            escaparHTML(producto.marca),
+            escaparHTML(producto.proveedor || "Sin proveedor"),
+            escaparHTML(producto.marca || "Sin marca"),
             escaparHTML(producto.stock),
             escaparHTML(producto.estado),
             escaparHTML(producto.stock_minimo),
             "-",
             escaparHTML(producto.unidad),
             "-",
-            escaparHTML(producto.precio),
+            `Bs ${Number(producto.precio || 0).toFixed(2)}`,
             "-"
         ]);
 
@@ -55,7 +66,7 @@ async function cargarInventario() {
             }
         });
 
-        console.log("Productos cargados:", productos);
+        console.log("Productos cargados:", productos.length);
 
     } catch (error) {
         console.error("Error al cargar inventario:", error);
