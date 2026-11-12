@@ -1,18 +1,20 @@
 
-import { API_URL } from "/assets/js/config/api.js";
+import { API_URL } from "../config/api.js";
 
-export async function verificarConexion() {
-    try {
-        const respuesta = await fetch(API_URL);
-        const datos = await respuesta.json();
+export async function obtenerProductos() {
+    const respuesta = await fetch(
+        `${API_URL}?accion=listarProductos`
+    );
 
-        return datos;
-    } catch (error) {
-        console.error("Error al conectar con la API:", error);
-
-        return {
-            success: false,
-            mensaje: "No se pudo conectar con el servidor."
-        };
+    if (!respuesta.ok) {
+        throw new Error("Error de comunicación con el servidor.");
     }
+
+    const datos = await respuesta.json();
+
+    if (!datos.success) {
+        throw new Error(datos.mensaje || "Error al consultar productos.");
+    }
+
+    return datos.productos;
 }
