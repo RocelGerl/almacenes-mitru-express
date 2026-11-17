@@ -1,5 +1,22 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    const inputImagen = document.getElementById('inputImagen');
+
+    const botonesHTML = `
+        <div style="display:flex;gap:6px;justify-content:center;">
+            <button type="button" class="accion-editar" title="Editar"
+                style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="accion-eliminar" title="Eliminar"
+                style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+    `;
+
+    window.__botonesAcciones = botonesHTML;
+
     function configurarModal(opciones) {
         const {
             modal,
@@ -12,7 +29,8 @@ document.addEventListener('DOMContentLoaded', function () {
             imagenPreview,
             btnAbrirCamara,
             datosAlGuardar,
-            tablaGlobal
+            tablaGlobal,
+            onGuardar
         } = opciones;
 
         if (!modal || !form || !btnAgregar) return;
@@ -70,6 +88,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         window.__leerArchivoActivo = leerArchivo;
+        window.__quitarImagenActivo = quitarImagen;
+        window.__mostrarImagenActivo = mostrarImagen;
 
         dropzone.addEventListener('click', (e) => {
             e.preventDefault();
@@ -77,9 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
             inputImagen.click();
         });
 
-        inputImagen.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
+        inputImagen.addEventListener('click', (e) => e.stopPropagation());
 
         if (!inputImagen.dataset.listenerActivo) {
             inputImagen.dataset.listenerActivo = "1";
@@ -108,8 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         dropzone.addEventListener('drop', (e) => {
-            const file = e.dataTransfer.files[0];
-            leerArchivo(file);
+            leerArchivo(e.dataTransfer.files[0]);
         });
 
         async function cargarCamaras() {
@@ -144,8 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
             modalCamara.showModal();
             try {
                 await cargarCamaras();
-                const deviceId = camarasDisponibles[indiceCamaraActual]?.deviceId;
-                await iniciarStream(deviceId);
+                await iniciarStream(camarasDisponibles[indiceCamaraActual]?.deviceId);
                 overlay.style.display = 'none';
             } catch (err) {
                 overlay.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> No se pudo acceder a la cámara';
@@ -170,11 +186,9 @@ document.addEventListener('DOMContentLoaded', function () {
         btnCambiarCamara.addEventListener('click', async (e) => {
             e.stopPropagation();
             if (camarasDisponibles.length < 2) return;
-
             indiceCamaraActual = (indiceCamaraActual + 1) % camarasDisponibles.length;
             overlay.style.display = 'flex';
             overlay.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cambiando cámara...';
-
             try {
                 await iniciarStream(camarasDisponibles[indiceCamaraActual].deviceId);
                 overlay.style.display = 'none';
@@ -202,46 +216,61 @@ document.addEventListener('DOMContentLoaded', function () {
 
         modalCamara.addEventListener('close', detenerCamara);
 
+        let filaEditando = null;
+
         btnAgregar.addEventListener('click', () => {
             form.reset();
             form.classList.remove('was-validated');
             quitarImagen();
+            filaEditando = null;
+            const titulo = modal.querySelector('.modal-title');
+            if (titulo) {
+                titulo.innerHTML = '<i class="fa-solid fa-circle-plus"></i> Agregar';
+            }
             modal.showModal();
         });
 
         function cerrarModal() {
             detenerCamara();
             modal.close();
+            filaEditando = null;
         }
 
         btnCerrar.addEventListener('click', cerrarModal);
         btnCancelar.addEventListener('click', cerrarModal);
 
         modal.addEventListener('click', (e) => {
-            if (e.target.closest('.imagen-seccion') || e.target === inputImagen) {
-                return;
-            }
+            if (e.target.closest('.imagen-seccion') || e.target === inputImagen) return;
             const rect = modal.getBoundingClientRect();
             const fuera =
-                e.clientX < rect.left ||
-                e.clientX > rect.right ||
-                e.clientY < rect.top ||
-                e.clientY > rect.bottom;
+                e.clientX < rect.left || e.clientX > rect.right ||
+                e.clientY < rect.top || e.clientY > rect.bottom;
             if (fuera) cerrarModal();
         });
 
         modalCamara.addEventListener('click', (e) => {
             const rect = modalCamara.getBoundingClientRect();
             const fuera =
-                e.clientX < rect.left ||
-                e.clientX > rect.right ||
-                e.clientY < rect.top ||
-                e.clientY > rect.bottom;
+                e.clientX < rect.left || e.clientX > rect.right ||
+                e.clientY < rect.top || e.clientY > rect.bottom;
             if (fuera) {
                 detenerCamara();
                 modalCamara.close();
             }
         });
+
+        modal.__abrirEdicion = (datosFila, filaNode) => {
+            filaEditando = filaNode;
+            form.reset();
+            form.classList.remove('was-validated');
+            quitarImagen();
+            const titulo = modal.querySelector('.modal-title');
+            if (titulo) {
+                titulo.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar';
+            }
+            if (datosFila.imagen) mostrarImagen(datosFila.imagen);
+            modal.showModal();
+        };
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -261,22 +290,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const tabla = window[tablaGlobal];
-            if (tabla) {
-                const nro = tabla.rows().count() + 1;
-                const fila = tabla.row.add(datos.fila(nro)).draw(false).node();
 
-                if (datos.onEditar) {
-                    fila.querySelector('.accion-editar')?.addEventListener('click', () => {
-                        datos.onEditar(fila);
-                    });
+            if (tabla) {
+                if (filaEditando) {
+                    const nro = tabla.row(filaEditando).data()[0];
+                    tabla.row(filaEditando).data(datos.fila(nro)).draw(false);
+                    filaEditando = null;
+                } else {
+                    const nro = tabla.rows().count() + 1;
+                    tabla.row.add(datos.fila(nro)).draw(false);
                 }
-                if (datos.onEliminar) {
-                    fila.querySelector('.accion-eliminar')?.addEventListener('click', () => {
-                        datos.onEliminar(fila);
-                    });
-                }
-            } else {
-                console.warn(`No existe window.${tablaGlobal}. Asigna el DataTable a window al crearlo.`);
+            }
+
+            if (typeof onGuardar === 'function') {
+                onGuardar(datos);
             }
 
             form.reset();
@@ -285,27 +312,24 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.close();
         });
 
+        window.__editarFila = (filaNode, datosOriginales) => {
+            modal.__abrirEdicion(datosOriginales, filaNode);
+            const rellenar = datosOriginales.__rellenar;
+            if (typeof rellenar === 'function') rellenar();
+        };
+
+        window.__eliminarFila = (filaNode, nombre) => {
+            if (!confirm(`¿Eliminar "${nombre}"?`)) return;
+            const tabla = window[tablaGlobal];
+            if (tabla) tabla.row(filaNode).remove().draw(false);
+        };
+
         return { mostrarImagen, quitarImagen };
     }
 
-    const inputImagen = document.getElementById('inputImagen');
-
-    const botonesHTML = `
-        <div style="display:flex;gap:6px;justify-content:center;">
-            <button type="button" class="accion-editar" title="Editar"
-                style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
-                <i class="fa-solid fa-pen"></i>
-            </button>
-            <button type="button" class="accion-eliminar" title="Eliminar"
-                style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-    `;
-
     const modalProducto = document.getElementById('modalAgregarProducto');
     if (modalProducto) {
-        configurarModal({
+        window.__configProducto = configurarModal({
             modal: modalProducto,
             form: document.getElementById('formAgregarProducto'),
             btnAgregar: document.getElementById('btnAgregarProducto'),
@@ -336,10 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return {
                     ...datos,
                     fotoHTML,
-                    fila: (nro) => [nro, fotoHTML, datos.nombre, datos.proveedor, datos.cantidad,
-                        datos.estado, datos.minimo, datos.peso, datos.unidad, datos.cantidadPeso,
-                        datos.precio, botonesHTML],
-                    onEditar: (fila) => {
+                    __rellenar: () => {
                         document.getElementById('prodNombre').value = datos.nombre;
                         document.getElementById('prodProveedor').value = datos.proveedor;
                         document.getElementById('prodCantidad').value = datos.cantidad;
@@ -349,14 +370,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById('prodUnidad').value = datos.unidad;
                         document.getElementById('prodCantidadPeso').value = datos.cantidadPeso;
                         document.getElementById('prodPrecio').value = datos.precio;
-                        window.tablaInventario.row(fila).remove().draw(false);
-                        modalProducto.showModal();
                     },
-                    onEliminar: (fila) => {
-                        if (confirm(`¿Eliminar el producto "${datos.nombre}"?`)) {
-                            window.tablaInventario.row(fila).remove().draw(false);
-                        }
-                    }
+                    fila: (nro) => [nro, fotoHTML, datos.nombre, datos.proveedor, datos.cantidad,
+                        datos.estado, datos.minimo, datos.peso, datos.unidad, datos.cantidadPeso,
+                        datos.precio, botonesHTML]
                 };
             }
         });
@@ -364,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const modalProveedor = document.getElementById('modalAgregarProveedor');
     if (modalProveedor) {
-        configurarModal({
+        window.__configProveedor = configurarModal({
             modal: modalProveedor,
             form: document.getElementById('formAgregarProveedor'),
             btnAgregar: document.getElementById('btnAgregarProveedor'),
@@ -399,10 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return {
                     ...datos,
                     fotoHTML,
-                    fila: (nro) => [nro, fotoHTML, datos.nombre, datos.preventista, datos.telefono,
-                        datos.diasPedido, datos.diasEntrega, cantidadMinimaHTML, datos.direccion,
-                        datos.productos, botonesHTML],
-                    onEditar: (fila) => {
+                    __rellenar: () => {
                         document.getElementById('provNombre').value = datos.nombre;
                         document.getElementById('provPreventista').value = datos.preventista;
                         document.getElementById('provTelefono').value = datos.telefono;
@@ -415,14 +429,10 @@ document.addEventListener('DOMContentLoaded', function () {
                             inp.checked = dias.includes(inp.value);
                         });
                         document.getElementById('provProductos').value = datos.productos;
-                        window.tablaProveedores.row(fila).remove().draw(false);
-                        modalProveedor.showModal();
                     },
-                    onEliminar: (fila) => {
-                        if (confirm(`¿Eliminar al proveedor "${datos.nombre}"?`)) {
-                            window.tablaProveedores.row(fila).remove().draw(false);
-                        }
-                    }
+                    fila: (nro) => [nro, fotoHTML, datos.nombre, datos.preventista, datos.telefono,
+                        datos.diasPedido, datos.diasEntrega, cantidadMinimaHTML, datos.direccion,
+                        datos.productos, botonesHTML]
                 };
             }
         });
