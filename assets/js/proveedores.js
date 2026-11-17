@@ -51,7 +51,7 @@ async function cargarProveedores() {
         ]);
 
         if (DataTable.isDataTable("#tablaProveedores")) {
-            window.tablaProveedores.destroy();
+            new DataTable("#tablaProveedores").destroy();
         }
 
         cuerpo.innerHTML = "";
