@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -238,7 +238,7 @@
                 <button type="button" class="btn-cancelar" id="cancelarModalProducto">
                     <i class="fa-solid fa-xmark"></i> Cancelar
                 </button>
-                <button type="submit" form="formAgregarProducto" class="btn-guardar">
+                <button type="submit" form="formAgregarProducto" class="btn-guardar" id="btnGuardarProducto">
                     <i class="fa-solid fa-floppy-disk"></i> Guardar Producto
                 </button>
             </div>
@@ -270,6 +270,24 @@
             <div class="modal-camara-footer">
                 <button type="button" class="btn-capturar" id="btnCapturarFoto" title="Capturar foto">
                     <i class="fa-solid fa-camera"></i>
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="modalConfirmarEliminar" class="modal-confirmar">
+        <div class="modal-confirmar-contenido">
+            <div class="modal-confirmar-icono">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="modal-confirmar-titulo">¿Eliminar registro?</h3>
+            <p class="modal-confirmar-texto" id="modalConfirmarTexto">Esta acción no se puede deshacer.</p>
+            <div class="modal-confirmar-acciones">
+                <button type="button" class="btn-cancelar" id="btnCancelarEliminar">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="button" class="btn-eliminar-confirmar" id="btnConfirmarEliminar">
+                    <i class="fa-solid fa-trash"></i> Eliminar
                 </button>
             </div>
         </div>
