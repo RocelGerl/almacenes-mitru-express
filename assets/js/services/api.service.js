@@ -1,4 +1,3 @@
-
 import { API_URL } from "/assets/js/config/api.js";
 
 export async function obtenerProductos() {
@@ -34,7 +33,6 @@ export async function obtenerProductos() {
     }
 }
 
-
 export async function obtenerProveedores() {
     const respuesta = await fetch(`${API_URL}?accion=listarProveedores`);
 
@@ -55,3 +53,10 @@ export async function obtenerProveedores() {
     return datos.proveedores;
 }
 
+export async function obtenerInventario() {
+    const productos = await obtenerProductos();
+    return productos.map(p => ({
+        id: p.id ?? p.ID ?? "",
+        nombre: p.nombre ?? p.producto ?? p.Nombre ?? ""
+    })).filter(p => p.nombre);
+}
