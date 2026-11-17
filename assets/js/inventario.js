@@ -1,4 +1,3 @@
-
 import { obtenerProductos } from "/assets/js/services/api.service.js";
 
 document.addEventListener("DOMContentLoaded", cargarInventario);
@@ -26,6 +25,19 @@ async function cargarInventario() {
             throw new Error("obtenerProductos() no devolvió un arreglo.");
         }
 
+        const botonesAcciones = `
+            <div style="display:flex;gap:6px;justify-content:center;">
+                <button type="button" class="accion-editar" title="Editar"
+                    style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button type="button" class="accion-eliminar" title="Eliminar"
+                    style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+
         const filas = productos.map((producto, indice) => [
             indice + 1,
             "Sin imagen",
@@ -39,16 +51,16 @@ async function cargarInventario() {
             escaparHTML(producto.unidad),
             "-",
             `Bs ${Number(producto.precio || 0).toFixed(2)}`,
-            "-"
+            botonesAcciones
         ]);
 
         if (DataTable.isDataTable("#tablaInventario")) {
-            new DataTable("#tablaInventario").destroy();
+            window.tablaInventario.destroy();
         }
 
         cuerpo.innerHTML = "";
 
-        new DataTable("#tablaInventario", {
+        window.tablaInventario = new DataTable("#tablaInventario", {
             data: filas,
             scrollX: true,
             language: {
