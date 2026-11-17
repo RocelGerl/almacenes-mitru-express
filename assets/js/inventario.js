@@ -30,6 +30,18 @@ async function cargarInventario() {
 
         const filas = productos.map((producto, indice) => {
             const id = indice;
+            const botones = `
+                <div style="display:flex;gap:6px;justify-content:center;">
+                    <button type="button" class="accion-editar" data-id="${id}" title="Editar"
+                        style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button type="button" class="accion-eliminar" data-id="${id}" title="Eliminar"
+                        style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
             return [
                 indice + 1,
                 "Sin imagen",
@@ -43,7 +55,7 @@ async function cargarInventario() {
                 escaparHTML(producto.unidad),
                 "-",
                 `Bs ${Number(producto.precio || 0).toFixed(2)}`,
-                crearBotones(id)
+                botones
             ];
         });
 
@@ -71,7 +83,9 @@ async function cargarInventario() {
             }
         });
 
-        enlazarBotones(cuerpo);
+        if (typeof window.__configurarAccionesInventario === 'function') {
+            window.__configurarAccionesInventario(cuerpo, productosCache);
+        }
 
     } catch (error) {
         console.error("Error al cargar inventario:", error);
@@ -81,66 +95,6 @@ async function cargarInventario() {
             </tr>
         `;
     }
-}
-
-function crearBotones(id) {
-    return `
-        <div style="display:flex;gap:6px;justify-content:center;">
-            <button type="button" class="accion-editar" data-id="${id}" title="Editar"
-                style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
-                <i class="fa-solid fa-pen"></i>
-            </button>
-            <button type="button" class="accion-eliminar" data-id="${id}" title="Eliminar"
-                style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-    `;
-}
-
-function enlazarBotones(contenedor) {
-    contenedor.querySelectorAll('.accion-editar').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = Number(btn.dataset.id);
-            const producto = productosCache[id];
-            if (!producto) return;
-
-            const filaNode = btn.closest('tr');
-            const datos = {
-                nombre: producto.nombre || '',
-                proveedor: producto.proveedor || '',
-                cantidad: producto.stock || '',
-                estado: producto.estado || '',
-                minimo: producto.stock_minimo || '',
-                peso: producto.peso || '',
-                unidad: producto.unidad || '',
-                cantidadPeso: producto.cantidad_peso || '',
-                precio: producto.precio || '',
-                imagen: producto.foto || null,
-                __rellenar: () => {
-                    document.getElementById('prodNombre').value = producto.nombre || '';
-                    document.getElementById('prodProveedor').value = producto.proveedor || '';
-                    document.getElementById('prodCantidad').value = producto.stock || '';
-                    document.getElementById('prodEstado').value = producto.estado || '';
-                    document.getElementById('prodMinimo').value = producto.stock_minimo || '';
-                    document.getElementById('prodPeso').value = producto.peso || '';
-                    document.getElementById('prodUnidad').value = producto.unidad || '';
-                    document.getElementById('prodCantidadPeso').value = producto.cantidad_peso || '';
-                    document.getElementById('prodPrecio').value = producto.precio || '';
-                }
-            };
-            window.__editarFila(filaNode, datos);
-        });
-    });
-
-    contenedor.querySelectorAll('.accion-eliminar').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = Number(btn.dataset.id);
-            const producto = productosCache[id];
-            const filaNode = btn.closest('tr');
-            window.__eliminarFila(filaNode, producto?.nombre || 'producto');
-        });
-    });
 }
 
 function escaparHTML(valor) {
