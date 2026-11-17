@@ -2,8 +2,6 @@ import { obtenerProductos } from "/assets/js/services/api.service.js";
 
 document.addEventListener("DOMContentLoaded", cargarInventario);
 
-const productosCache = [];
-
 async function cargarInventario() {
     const cuerpo = document.querySelector("#tablaInventario tbody");
 
@@ -25,8 +23,9 @@ async function cargarInventario() {
             throw new Error("obtenerProductos() no devolvió un arreglo.");
         }
 
-        productosCache.length = 0;
-        productos.forEach(p => productosCache.push(p));
+        if (typeof window.__setCacheInventario === 'function') {
+            window.__setCacheInventario(productos);
+        }
 
         const filas = productos.map((producto, indice) => {
             const id = indice;
@@ -82,10 +81,6 @@ async function cargarInventario() {
                 emptyTable: "No hay productos registrados"
             }
         });
-
-        if (typeof window.__configurarAccionesInventario === 'function') {
-            window.__configurarAccionesInventario(cuerpo, productosCache);
-        }
 
     } catch (error) {
         console.error("Error al cargar inventario:", error);
