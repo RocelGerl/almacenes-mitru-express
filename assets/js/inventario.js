@@ -55,7 +55,7 @@ async function cargarInventario() {
         ]);
 
         if (DataTable.isDataTable("#tablaInventario")) {
-            window.tablaInventario.destroy();
+            new DataTable("#tablaInventario").destroy();
         }
 
         cuerpo.innerHTML = "";
