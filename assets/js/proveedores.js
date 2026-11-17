@@ -2,8 +2,6 @@ import { obtenerProveedores } from "/assets/js/services/api.service.js";
 
 document.addEventListener("DOMContentLoaded", cargarProveedores);
 
-const proveedoresCache = [];
-
 async function cargarProveedores() {
     const cuerpo = document.querySelector("#tablaProveedores tbody");
 
@@ -21,8 +19,9 @@ async function cargarProveedores() {
 
         const proveedores = await obtenerProveedores();
 
-        proveedoresCache.length = 0;
-        proveedores.forEach(p => proveedoresCache.push(p));
+        if (typeof window.__setCacheProveedores === 'function') {
+            window.__setCacheProveedores(proveedores);
+        }
 
         const filas = proveedores.map((proveedor, indice) => {
             const id = indice;
@@ -78,10 +77,6 @@ async function cargarProveedores() {
                 emptyTable: "No hay proveedores registrados"
             }
         });
-
-        if (typeof window.__configurarAccionesProveedores === 'function') {
-            window.__configurarAccionesProveedores(cuerpo, proveedoresCache);
-        }
 
     } catch (error) {
         console.error("Error al cargar proveedores:", error);
