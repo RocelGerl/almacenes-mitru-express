@@ -54,8 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    window.__modalConfirmarEliminar = abrirConfirmarEliminar;
-
     function configurarModal(opciones) {
         const {
             modal,
@@ -392,9 +390,21 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById('prodCantidadPeso').value = datos.cantidadPeso;
                         document.getElementById('prodPrecio').value = datos.precio;
                     },
-                    fila: (nro) => [nro, fotoHTML, datos.nombre, datos.proveedor, datos.cantidad,
-                        datos.estado, datos.minimo, datos.peso, datos.unidad, datos.cantidadPeso,
-                        datos.precio, botonesHTML]
+                    fila: (nro) => [
+                        nro,
+                        fotoHTML,
+                        datos.nombre,
+                        datos.proveedor,
+                        'Sin marca',
+                        datos.cantidad,
+                        datos.estado,
+                        datos.minimo,
+                        datos.peso,
+                        datos.unidad,
+                        datos.cantidadPeso,
+                        datos.precio,
+                        botonesHTML
+                    ]
                 };
             }
         });
@@ -451,9 +461,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                         document.getElementById('provProductos').value = datos.productos;
                     },
-                    fila: (nro) => [nro, fotoHTML, datos.nombre, datos.preventista, datos.telefono,
-                        datos.diasPedido, datos.diasEntrega, cantidadMinimaHTML, datos.direccion,
-                        datos.productos, botonesHTML]
+                    fila: (nro) => [
+                        nro,
+                        fotoHTML,
+                        datos.nombre,
+                        datos.preventista,
+                        datos.telefono,
+                        datos.diasPedido,
+                        datos.diasEntrega,
+                        cantidadMinimaHTML,
+                        datos.direccion,
+                        datos.productos,
+                        botonesHTML
+                    ]
                 };
             }
         });
