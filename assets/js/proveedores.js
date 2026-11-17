@@ -26,6 +26,18 @@ async function cargarProveedores() {
 
         const filas = proveedores.map((proveedor, indice) => {
             const id = indice;
+            const botones = `
+                <div style="display:flex;gap:6px;justify-content:center;">
+                    <button type="button" class="accion-editar" data-id="${id}" title="Editar"
+                        style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button type="button" class="accion-eliminar" data-id="${id}" title="Eliminar"
+                        style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
             return [
                 indice + 1,
                 proveedor.foto
@@ -39,7 +51,7 @@ async function cargarProveedores() {
                 escaparHTML(proveedor.cantidad_minima),
                 escaparHTML(proveedor.direccion),
                 escaparHTML(proveedor.productos),
-                crearBotones(id)
+                botones
             ];
         });
 
@@ -67,7 +79,9 @@ async function cargarProveedores() {
             }
         });
 
-        enlazarBotones(cuerpo);
+        if (typeof window.__configurarAccionesProveedores === 'function') {
+            window.__configurarAccionesProveedores(cuerpo, proveedoresCache);
+        }
 
     } catch (error) {
         console.error("Error al cargar proveedores:", error);
@@ -77,69 +91,6 @@ async function cargarProveedores() {
             </tr>
         `;
     }
-}
-
-function crearBotones(id) {
-    return `
-        <div style="display:flex;gap:6px;justify-content:center;">
-            <button type="button" class="accion-editar" data-id="${id}" title="Editar"
-                style="background:#fd9f21;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
-                <i class="fa-solid fa-pen"></i>
-            </button>
-            <button type="button" class="accion-eliminar" data-id="${id}" title="Eliminar"
-                style="background:#ce2a3a;color:white;border:none;border-radius:6px;padding:6px 8px;cursor:pointer;">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-    `;
-}
-
-function enlazarBotones(contenedor) {
-    contenedor.querySelectorAll('.accion-editar').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = Number(btn.dataset.id);
-            const proveedor = proveedoresCache[id];
-            if (!proveedor) return;
-
-            const filaNode = btn.closest('tr');
-            const datos = {
-                nombre: proveedor.nombre || '',
-                preventista: proveedor.contacto || '',
-                telefono: proveedor.telefono || '',
-                direccion: proveedor.direccion || '',
-                diasPedido: proveedor.dias_pedido || '',
-                diasEntrega: proveedor.dias_entrega || '',
-                cantidadMinima: proveedor.cantidad_minima || '',
-                unidad: proveedor.unidad || 'Unidad',
-                productos: proveedor.productos || '',
-                imagen: proveedor.foto || null,
-                __rellenar: () => {
-                    document.getElementById('provNombre').value = proveedor.nombre || '';
-                    document.getElementById('provPreventista').value = proveedor.contacto || '';
-                    document.getElementById('provTelefono').value = proveedor.telefono || '';
-                    document.getElementById('provDireccion').value = proveedor.direccion || '';
-                    document.getElementById('provDiasEntrega').value = proveedor.dias_entrega || '';
-                    document.getElementById('provCantidadMinima').value = proveedor.cantidad_minima || '';
-                    document.getElementById('provUnidad').value = proveedor.unidad || 'Unidad';
-                    const dias = (proveedor.dias_pedido || '').split(',').map(s => s.trim());
-                    document.querySelectorAll('#diasPedido input').forEach(inp => {
-                        inp.checked = dias.includes(inp.value);
-                    });
-                    document.getElementById('provProductos').value = proveedor.productos || '';
-                }
-            };
-            window.__editarFila(filaNode, datos);
-        });
-    });
-
-    contenedor.querySelectorAll('.accion-eliminar').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const id = Number(btn.dataset.id);
-            const proveedor = proveedoresCache[id];
-            const filaNode = btn.closest('tr');
-            window.__eliminarFila(filaNode, proveedor?.nombre || 'proveedor');
-        });
-    });
 }
 
 function escaparHTML(valor) {
