@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.readAsDataURL(file);
         }
 
+        window.__leerArchivoActivo = leerArchivo;
+
         dropzone.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -79,12 +81,15 @@ document.addEventListener('DOMContentLoaded', function () {
             e.stopPropagation();
         });
 
-        inputImagen.addEventListener('change', (e) => {
-            e.stopPropagation();
-            if (inputImagen.files && inputImagen.files[0]) {
-                leerArchivo(inputImagen.files[0]);
-            }
-        });
+        if (!inputImagen.dataset.listenerActivo) {
+            inputImagen.dataset.listenerActivo = "1";
+            inputImagen.addEventListener('change', (e) => {
+                e.stopPropagation();
+                if (inputImagen.files && inputImagen.files[0] && window.__leerArchivoActivo) {
+                    window.__leerArchivoActivo(inputImagen.files[0]);
+                }
+            });
+        }
 
         ['dragenter', 'dragover'].forEach(ev => {
             dropzone.addEventListener(ev, (e) => {
@@ -243,13 +248,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const datos = datosAlGuardar(imagenData);
 
-            const valido = Object.keys(datos).every(k => {
-                if (k === 'imagen') return true;
-                return datos[k] !== null && datos[k] !== undefined && datos[k] !== '';
+            const camposObligatorios = Object.keys(datos).filter(k => k !== 'imagen' && k !== 'fotoHTML');
+            const valido = camposObligatorios.every(k => {
+                const v = datos[k];
+                return v !== null && v !== undefined && String(v).trim() !== '';
             });
 
             if (!valido) {
                 form.classList.add('was-validated');
+                alert('Completa todos los campos obligatorios.');
                 return;
             }
 
@@ -268,6 +275,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         datos.onEliminar(fila);
                     });
                 }
+            } else {
+                console.warn(`No existe window.${tablaGlobal}. Asigna el DataTable a window al crearlo.`);
             }
 
             form.reset();
@@ -314,9 +323,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     cantidad: document.getElementById('prodCantidad').value,
                     estado: document.getElementById('prodEstado').value,
                     minimo: document.getElementById('prodMinimo').value,
-                    peso: document.getElementById('prodPeso').value,
-                    unidad: document.getElementById('prodUnidad').value,
-                    cantidadPeso: document.getElementById('prodCantidadPeso').value,
+                    peso: document.getElementById('prodPeso').value || '0',
+                    unidad: document.getElementById('prodUnidad').value || '-',
+                    cantidadPeso: document.getElementById('prodCantidadPeso').value || '0',
                     precio: document.getElementById('prodPrecio').value,
                     imagen: imagen
                 };
@@ -340,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById('prodUnidad').value = datos.unidad;
                         document.getElementById('prodCantidadPeso').value = datos.cantidadPeso;
                         document.getElementById('prodPrecio').value = datos.precio;
-                        if (imagen) window[tabla].onEditarImg?.(imagen);
                         window.tablaInventario.row(fila).remove().draw(false);
                         modalProducto.showModal();
                     },
@@ -368,35 +376,44 @@ document.addEventListener('DOMContentLoaded', function () {
             btnAbrirCamara: document.getElementById('btnAbrirCamara'),
             tablaGlobal: 'tablaProveedores',
             datosAlGuardar: (imagen) => {
+                const diasPedido = [...document.querySelectorAll('#diasPedido input:checked')].map(i => i.value).join(', ');
                 const datos = {
                     nombre: document.getElementById('provNombre').value.trim(),
                     preventista: document.getElementById('provPreventista').value.trim(),
                     telefono: document.getElementById('provTelefono').value.trim(),
                     direccion: document.getElementById('provDireccion').value.trim(),
-                    diasPedido: document.getElementById('provDiasPedido').value.trim(),
-                    diasEntrega: document.getElementById('provDiasEntrega').value.trim(),
+                    diasPedido: diasPedido,
+                    diasEntrega: document.getElementById('provDiasEntrega').value,
                     cantidadMinima: document.getElementById('provCantidadMinima').value,
+                    unidad: document.getElementById('provUnidad').value,
                     productos: document.getElementById('provProductos').value.trim(),
                     imagen: imagen
                 };
                 const fotoHTML = imagen
                     ? `<img src="${imagen}" alt="${datos.nombre}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">`
                     : `<span style="color:#6b7c8f;font-size:11px;">Sin foto</span>`;
+                const cantidadMinimaHTML = datos.cantidadMinima
+                    ? `${datos.cantidadMinima} ${datos.unidad}`
+                    : '';
 
                 return {
                     ...datos,
                     fotoHTML,
                     fila: (nro) => [nro, fotoHTML, datos.nombre, datos.preventista, datos.telefono,
-                        datos.diasPedido, datos.diasEntrega, datos.cantidadMinima, datos.direccion,
+                        datos.diasPedido, datos.diasEntrega, cantidadMinimaHTML, datos.direccion,
                         datos.productos, botonesHTML],
                     onEditar: (fila) => {
                         document.getElementById('provNombre').value = datos.nombre;
                         document.getElementById('provPreventista').value = datos.preventista;
                         document.getElementById('provTelefono').value = datos.telefono;
                         document.getElementById('provDireccion').value = datos.direccion;
-                        document.getElementById('provDiasPedido').value = datos.diasPedido;
                         document.getElementById('provDiasEntrega').value = datos.diasEntrega;
                         document.getElementById('provCantidadMinima').value = datos.cantidadMinima;
+                        document.getElementById('provUnidad').value = datos.unidad || 'Unidad';
+                        const dias = (datos.diasPedido || '').split(',').map(s => s.trim());
+                        document.querySelectorAll('#diasPedido input').forEach(inp => {
+                            inp.checked = dias.includes(inp.value);
+                        });
                         document.getElementById('provProductos').value = datos.productos;
                         window.tablaProveedores.row(fila).remove().draw(false);
                         modalProveedor.showModal();
