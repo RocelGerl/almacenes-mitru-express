@@ -2,9 +2,7 @@ import { API_URL } from "/assets/js/config/api.js";
 
 export async function obtenerProductos() {
     try {
-        const respuesta = await fetch(
-            `${API_URL}?accion=listarProductos`
-        );
+        const respuesta = await fetch(`${API_URL}?accion=listarProductos`);
 
         if (!respuesta.ok) {
             throw new Error("Error de comunicación con el servidor.");
@@ -15,9 +13,7 @@ export async function obtenerProductos() {
         console.log("Respuesta de Google Sheets:", datos);
 
         if (!datos.success) {
-            throw new Error(
-                datos.mensaje || "Error al consultar productos."
-            );
+            throw new Error(datos.mensaje || "Error al consultar productos.");
         }
 
         if (!Array.isArray(datos.productos)) {
@@ -51,12 +47,4 @@ export async function obtenerProveedores() {
     }
 
     return datos.proveedores;
-}
-
-export async function obtenerInventario() {
-    const productos = await obtenerProductos();
-    return productos.map(p => ({
-        id: p.id ?? p.ID ?? "",
-        nombre: p.nombre ?? p.producto ?? p.Nombre ?? ""
-    })).filter(p => p.nombre);
 }
