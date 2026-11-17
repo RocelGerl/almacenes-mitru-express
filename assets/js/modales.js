@@ -15,7 +15,44 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>
     `;
 
-    window.__botonesAcciones = botonesHTML;
+    const modalConfirmar = document.getElementById('modalConfirmarEliminar');
+    const modalConfirmarTexto = document.getElementById('modalConfirmarTexto');
+    const btnConfirmarEliminar = document.getElementById('btnConfirmarEliminar');
+    const btnCancelarEliminar = document.getElementById('btnCancelarEliminar');
+
+    let accionEliminar = null;
+
+    function abrirConfirmarEliminar(nombre, callback) {
+        if (!modalConfirmar) {
+            if (confirm(`¿Eliminar "${nombre}"?`)) callback();
+            return;
+        }
+        modalConfirmarTexto.textContent = `Se eliminará "${nombre}". Esta acción no se puede deshacer.`;
+        accionEliminar = callback;
+        modalConfirmar.showModal();
+    }
+
+    btnCancelarEliminar?.addEventListener('click', () => {
+        accionEliminar = null;
+        modalConfirmar.close();
+    });
+
+    btnConfirmarEliminar?.addEventListener('click', () => {
+        if (typeof accionEliminar === 'function') accionEliminar();
+        accionEliminar = null;
+        modalConfirmar.close();
+    });
+
+    modalConfirmar?.addEventListener('click', (e) => {
+        const rect = modalConfirmar.getBoundingClientRect();
+        const fuera =
+            e.clientX < rect.left || e.clientX > rect.right ||
+            e.clientY < rect.top || e.clientY > rect.bottom;
+        if (fuera) {
+            accionEliminar = null;
+            modalConfirmar.close();
+        }
+    });
 
     function configurarModal(opciones) {
         const {
@@ -30,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
             btnAbrirCamara,
             datosAlGuardar,
             tablaGlobal,
-            onGuardar
+            alGuardar
         } = opciones;
 
         if (!modal || !form || !btnAgregar) return;
@@ -47,6 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
         let streamActual = null;
         let camarasDisponibles = [];
         let indiceCamaraActual = 0;
+        let filaEditando = null;
+
+        const tituloModal = modal.querySelector('.modal-title');
 
         function mostrarImagen(src) {
             imagenPreview.innerHTML = `
@@ -88,8 +128,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         window.__leerArchivoActivo = leerArchivo;
-        window.__quitarImagenActivo = quitarImagen;
-        window.__mostrarImagenActivo = mostrarImagen;
 
         dropzone.addEventListener('click', (e) => {
             e.preventDefault();
@@ -216,20 +254,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         modalCamara.addEventListener('close', detenerCamara);
 
-        let filaEditando = null;
-
-        btnAgregar.addEventListener('click', () => {
-            form.reset();
-            form.classList.remove('was-validated');
-            quitarImagen();
-            filaEditando = null;
-            const titulo = modal.querySelector('.modal-title');
-            if (titulo) {
-                titulo.innerHTML = '<i class="fa-solid fa-circle-plus"></i> Agregar';
-            }
-            modal.showModal();
-        });
-
         function cerrarModal() {
             detenerCamara();
             modal.close();
@@ -259,16 +283,31 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        modal.__abrirEdicion = (datosFila, filaNode) => {
+        btnAgregar.addEventListener('click', () => {
+            form.reset();
+            form.classList.remove('was-validated');
+            quitarImagen();
+            filaEditando = null;
+            if (tituloModal) {
+                tituloModal.innerHTML = '<i class="fa-solid fa-circle-plus"></i> Agregar';
+            }
+            modal.showModal();
+        });
+
+        modal.__editar = (datosOriginales, filaNode) => {
             filaEditando = filaNode;
             form.reset();
             form.classList.remove('was-validated');
             quitarImagen();
-            const titulo = modal.querySelector('.modal-title');
-            if (titulo) {
-                titulo.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar';
+            if (tituloModal) {
+                tituloModal.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar';
             }
-            if (datosFila.imagen) mostrarImagen(datosFila.imagen);
+            if (typeof datosOriginales.__rellenar === 'function') {
+                datosOriginales.__rellenar();
+            }
+            if (datosOriginales.imagen) {
+                mostrarImagen(datosOriginales.imagen);
+            }
             modal.showModal();
         };
 
@@ -277,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const datos = datosAlGuardar(imagenData);
 
-            const camposObligatorios = Object.keys(datos).filter(k => k !== 'imagen' && k !== 'fotoHTML');
+            const camposObligatorios = Object.keys(datos).filter(k => k !== 'imagen' && k !== 'fotoHTML' && k !== '__rellenar');
             const valido = camposObligatorios.every(k => {
                 const v = datos[k];
                 return v !== null && v !== undefined && String(v).trim() !== '';
@@ -290,7 +329,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const tabla = window[tablaGlobal];
-
             if (tabla) {
                 if (filaEditando) {
                     const nro = tabla.row(filaEditando).data()[0];
@@ -302,8 +340,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            if (typeof onGuardar === 'function') {
-                onGuardar(datos);
+            if (typeof alGuardar === 'function') {
+                alGuardar(datos);
             }
 
             form.reset();
@@ -311,25 +349,11 @@ document.addEventListener('DOMContentLoaded', function () {
             quitarImagen();
             modal.close();
         });
-
-        window.__editarFila = (filaNode, datosOriginales) => {
-            modal.__abrirEdicion(datosOriginales, filaNode);
-            const rellenar = datosOriginales.__rellenar;
-            if (typeof rellenar === 'function') rellenar();
-        };
-
-        window.__eliminarFila = (filaNode, nombre) => {
-            if (!confirm(`¿Eliminar "${nombre}"?`)) return;
-            const tabla = window[tablaGlobal];
-            if (tabla) tabla.row(filaNode).remove().draw(false);
-        };
-
-        return { mostrarImagen, quitarImagen };
     }
 
     const modalProducto = document.getElementById('modalAgregarProducto');
     if (modalProducto) {
-        window.__configProducto = configurarModal({
+        configurarModal({
             modal: modalProducto,
             form: document.getElementById('formAgregarProducto'),
             btnAgregar: document.getElementById('btnAgregarProducto'),
@@ -381,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const modalProveedor = document.getElementById('modalAgregarProveedor');
     if (modalProveedor) {
-        window.__configProveedor = configurarModal({
+        configurarModal({
             modal: modalProveedor,
             form: document.getElementById('formAgregarProveedor'),
             btnAgregar: document.getElementById('btnAgregarProveedor'),
@@ -437,4 +461,101 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    window.__configurarAccionesInventario = (contenedor, cache) => {
+        contenedor.querySelectorAll('.accion-editar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.dataset.id);
+                const producto = cache[id];
+                if (!producto) return;
+                const filaNode = btn.closest('tr');
+                const datos = {
+                    nombre: producto.nombre || '',
+                    proveedor: producto.proveedor || '',
+                    cantidad: producto.stock || '',
+                    estado: producto.estado || '',
+                    minimo: producto.stock_minimo || '',
+                    peso: producto.peso || '',
+                    unidad: producto.unidad || '',
+                    cantidadPeso: producto.cantidad_peso || '',
+                    precio: producto.precio || '',
+                    imagen: producto.foto || null,
+                    __rellenar: () => {
+                        document.getElementById('prodNombre').value = producto.nombre || '';
+                        document.getElementById('prodProveedor').value = producto.proveedor || '';
+                        document.getElementById('prodCantidad').value = producto.stock || '';
+                        document.getElementById('prodEstado').value = producto.estado || '';
+                        document.getElementById('prodMinimo').value = producto.stock_minimo || '';
+                        document.getElementById('prodPeso').value = producto.peso || '';
+                        document.getElementById('prodUnidad').value = producto.unidad || '';
+                        document.getElementById('prodCantidadPeso').value = producto.cantidad_peso || '';
+                        document.getElementById('prodPrecio').value = producto.precio || '';
+                    }
+                };
+                const modal = document.getElementById('modalAgregarProducto');
+                if (modal && modal.__editar) modal.__editar(datos, filaNode);
+            });
+        });
+
+        contenedor.querySelectorAll('.accion-eliminar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.dataset.id);
+                const producto = cache[id];
+                const filaNode = btn.closest('tr');
+                abrirConfirmarEliminar(producto?.nombre || 'producto', () => {
+                    window.tablaInventario.row(filaNode).remove().draw(false);
+                });
+            });
+        });
+    };
+
+    window.__configurarAccionesProveedores = (contenedor, cache) => {
+        contenedor.querySelectorAll('.accion-editar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.dataset.id);
+                const proveedor = cache[id];
+                if (!proveedor) return;
+                const filaNode = btn.closest('tr');
+                const datos = {
+                    nombre: proveedor.nombre || '',
+                    preventista: proveedor.contacto || '',
+                    telefono: proveedor.telefono || '',
+                    direccion: proveedor.direccion || '',
+                    diasPedido: proveedor.dias_pedido || '',
+                    diasEntrega: proveedor.dias_entrega || '',
+                    cantidadMinima: proveedor.cantidad_minima || '',
+                    unidad: proveedor.unidad || 'Unidad',
+                    productos: proveedor.productos || '',
+                    imagen: proveedor.foto || null,
+                    __rellenar: () => {
+                        document.getElementById('provNombre').value = proveedor.nombre || '';
+                        document.getElementById('provPreventista').value = proveedor.contacto || '';
+                        document.getElementById('provTelefono').value = proveedor.telefono || '';
+                        document.getElementById('provDireccion').value = proveedor.direccion || '';
+                        document.getElementById('provDiasEntrega').value = proveedor.dias_entrega || '';
+                        document.getElementById('provCantidadMinima').value = proveedor.cantidad_minima || '';
+                        document.getElementById('provUnidad').value = proveedor.unidad || 'Unidad';
+                        const dias = (proveedor.dias_pedido || '').split(',').map(s => s.trim());
+                        document.querySelectorAll('#diasPedido input').forEach(inp => {
+                            inp.checked = dias.includes(inp.value);
+                        });
+                        document.getElementById('provProductos').value = proveedor.productos || '';
+                    }
+                };
+                const modal = document.getElementById('modalAgregarProveedor');
+                if (modal && modal.__editar) modal.__editar(datos, filaNode);
+            });
+        });
+
+        contenedor.querySelectorAll('.accion-eliminar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = Number(btn.dataset.id);
+                const proveedor = cache[id];
+                const filaNode = btn.closest('tr');
+                abrirConfirmarEliminar(proveedor?.nombre || 'proveedor', () => {
+                    window.tablaProveedores.row(filaNode).remove().draw(false);
+                });
+            });
+        });
+    };
 });
