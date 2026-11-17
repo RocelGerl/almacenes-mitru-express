@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    window.__modalConfirmarEliminar = abrirConfirmarEliminar;
+
     function configurarModal(opciones) {
         const {
             modal,
@@ -66,8 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
             imagenPreview,
             btnAbrirCamara,
             datosAlGuardar,
-            tablaGlobal,
-            alGuardar
+            tablaGlobal
         } = opciones;
 
         if (!modal || !form || !btnAgregar) return;
@@ -340,10 +341,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            if (typeof alGuardar === 'function') {
-                alGuardar(datos);
-            }
-
             form.reset();
             form.classList.remove('was-validated');
             quitarImagen();
@@ -462,100 +459,111 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    window.__configurarAccionesInventario = (contenedor, cache) => {
-        contenedor.querySelectorAll('.accion-editar').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = Number(btn.dataset.id);
-                const producto = cache[id];
-                if (!producto) return;
-                const filaNode = btn.closest('tr');
-                const datos = {
-                    nombre: producto.nombre || '',
-                    proveedor: producto.proveedor || '',
-                    cantidad: producto.stock || '',
-                    estado: producto.estado || '',
-                    minimo: producto.stock_minimo || '',
-                    peso: producto.peso || '',
-                    unidad: producto.unidad || '',
-                    cantidadPeso: producto.cantidad_peso || '',
-                    precio: producto.precio || '',
-                    imagen: producto.foto || null,
-                    __rellenar: () => {
-                        document.getElementById('prodNombre').value = producto.nombre || '';
-                        document.getElementById('prodProveedor').value = producto.proveedor || '';
-                        document.getElementById('prodCantidad').value = producto.stock || '';
-                        document.getElementById('prodEstado').value = producto.estado || '';
-                        document.getElementById('prodMinimo').value = producto.stock_minimo || '';
-                        document.getElementById('prodPeso').value = producto.peso || '';
-                        document.getElementById('prodUnidad').value = producto.unidad || '';
-                        document.getElementById('prodCantidadPeso').value = producto.cantidad_peso || '';
-                        document.getElementById('prodPrecio').value = producto.precio || '';
-                    }
-                };
-                const modal = document.getElementById('modalAgregarProducto');
-                if (modal && modal.__editar) modal.__editar(datos, filaNode);
-            });
-        });
+    const cacheInventario = [];
+    const cacheProveedores = [];
 
-        contenedor.querySelectorAll('.accion-eliminar').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = Number(btn.dataset.id);
-                const producto = cache[id];
-                const filaNode = btn.closest('tr');
-                abrirConfirmarEliminar(producto?.nombre || 'producto', () => {
-                    window.tablaInventario.row(filaNode).remove().draw(false);
-                });
-            });
-        });
+    window.__setCacheInventario = (arr) => {
+        cacheInventario.length = 0;
+        arr.forEach(x => cacheInventario.push(x));
     };
 
-    window.__configurarAccionesProveedores = (contenedor, cache) => {
-        contenedor.querySelectorAll('.accion-editar').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = Number(btn.dataset.id);
-                const proveedor = cache[id];
-                if (!proveedor) return;
-                const filaNode = btn.closest('tr');
-                const datos = {
-                    nombre: proveedor.nombre || '',
-                    preventista: proveedor.contacto || '',
-                    telefono: proveedor.telefono || '',
-                    direccion: proveedor.direccion || '',
-                    diasPedido: proveedor.dias_pedido || '',
-                    diasEntrega: proveedor.dias_entrega || '',
-                    cantidadMinima: proveedor.cantidad_minima || '',
-                    unidad: proveedor.unidad || 'Unidad',
-                    productos: proveedor.productos || '',
-                    imagen: proveedor.foto || null,
-                    __rellenar: () => {
-                        document.getElementById('provNombre').value = proveedor.nombre || '';
-                        document.getElementById('provPreventista').value = proveedor.contacto || '';
-                        document.getElementById('provTelefono').value = proveedor.telefono || '';
-                        document.getElementById('provDireccion').value = proveedor.direccion || '';
-                        document.getElementById('provDiasEntrega').value = proveedor.dias_entrega || '';
-                        document.getElementById('provCantidadMinima').value = proveedor.cantidad_minima || '';
-                        document.getElementById('provUnidad').value = proveedor.unidad || 'Unidad';
-                        const dias = (proveedor.dias_pedido || '').split(',').map(s => s.trim());
-                        document.querySelectorAll('#diasPedido input').forEach(inp => {
-                            inp.checked = dias.includes(inp.value);
-                        });
-                        document.getElementById('provProductos').value = proveedor.productos || '';
-                    }
-                };
-                const modal = document.getElementById('modalAgregarProveedor');
-                if (modal && modal.__editar) modal.__editar(datos, filaNode);
-            });
-        });
-
-        contenedor.querySelectorAll('.accion-eliminar').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const id = Number(btn.dataset.id);
-                const proveedor = cache[id];
-                const filaNode = btn.closest('tr');
-                abrirConfirmarEliminar(proveedor?.nombre || 'proveedor', () => {
-                    window.tablaProveedores.row(filaNode).remove().draw(false);
-                });
-            });
-        });
+    window.__setCacheProveedores = (arr) => {
+        cacheProveedores.length = 0;
+        arr.forEach(x => cacheProveedores.push(x));
     };
+
+    document.addEventListener('click', (e) => {
+        const btnEditarInv = e.target.closest('#tablaInventario .accion-editar');
+        if (btnEditarInv) {
+            const id = Number(btnEditarInv.dataset.id);
+            const p = cacheInventario[id];
+            if (!p) return;
+            const filaNode = btnEditarInv.closest('tr');
+            const modal = document.getElementById('modalAgregarProducto');
+            if (!modal || !modal.__editar) return;
+            modal.__editar({
+                nombre: p.nombre || '',
+                proveedor: p.proveedor || '',
+                cantidad: p.stock || '',
+                estado: p.estado || '',
+                minimo: p.stock_minimo || '',
+                peso: p.peso || '',
+                unidad: p.unidad || '',
+                cantidadPeso: p.cantidad_peso || '',
+                precio: p.precio || '',
+                imagen: p.foto || null,
+                __rellenar: () => {
+                    document.getElementById('prodNombre').value = p.nombre || '';
+                    document.getElementById('prodProveedor').value = p.proveedor || '';
+                    document.getElementById('prodCantidad').value = p.stock || '';
+                    document.getElementById('prodEstado').value = p.estado || '';
+                    document.getElementById('prodMinimo').value = p.stock_minimo || '';
+                    document.getElementById('prodPeso').value = p.peso || '';
+                    document.getElementById('prodUnidad').value = p.unidad || '';
+                    document.getElementById('prodCantidadPeso').value = p.cantidad_peso || '';
+                    document.getElementById('prodPrecio').value = p.precio || '';
+                }
+            }, filaNode);
+            return;
+        }
+
+        const btnEliminarInv = e.target.closest('#tablaInventario .accion-eliminar');
+        if (btnEliminarInv) {
+            const id = Number(btnEliminarInv.dataset.id);
+            const p = cacheInventario[id];
+            const filaNode = btnEliminarInv.closest('tr');
+            abrirConfirmarEliminar(p?.nombre || 'producto', () => {
+                window.tablaInventario.row(filaNode).remove().draw(false);
+            });
+            return;
+        }
+
+        const btnEditarProv = e.target.closest('#tablaProveedores .accion-editar');
+        if (btnEditarProv) {
+            const id = Number(btnEditarProv.dataset.id);
+            const p = cacheProveedores[id];
+            if (!p) return;
+            const filaNode = btnEditarProv.closest('tr');
+            const modal = document.getElementById('modalAgregarProveedor');
+            if (!modal || !modal.__editar) return;
+            modal.__editar({
+                nombre: p.nombre || '',
+                preventista: p.contacto || '',
+                telefono: p.telefono || '',
+                direccion: p.direccion || '',
+                diasPedido: p.dias_pedido || '',
+                diasEntrega: p.dias_entrega || '',
+                cantidadMinima: p.cantidad_minima || '',
+                unidad: p.unidad || 'Unidad',
+                productos: p.productos || '',
+                imagen: p.foto || null,
+                __rellenar: () => {
+                    document.getElementById('provNombre').value = p.nombre || '';
+                    document.getElementById('provPreventista').value = p.contacto || '';
+                    document.getElementById('provTelefono').value = p.telefono || '';
+                    document.getElementById('provDireccion').value = p.direccion || '';
+                    document.getElementById('provDiasEntrega').value = p.dias_entrega || '';
+                    document.getElementById('provCantidadMinima').value = p.cantidad_minima || '';
+                    document.getElementById('provUnidad').value = p.unidad || 'Unidad';
+                    const dias = (p.dias_pedido || '').split(',').map(s => s.trim());
+                    document.querySelectorAll('#diasPedido input').forEach(inp => {
+                        inp.checked = dias.includes(inp.value);
+                    });
+                    document.getElementById('provProductos').value = p.productos || '';
+                }
+            }, filaNode);
+            return;
+        }
+
+        const btnEliminarProv = e.target.closest('#tablaProveedores .accion-eliminar');
+        if (btnEliminarProv) {
+            const id = Number(btnEliminarProv.dataset.id);
+            const p = cacheProveedores[id];
+            const filaNode = btnEliminarProv.closest('tr');
+            abrirConfirmarEliminar(p?.nombre || 'proveedor', () => {
+                window.tablaProveedores.row(filaNode).remove().draw(false);
+            });
+            return;
+        }
+    });
 });
